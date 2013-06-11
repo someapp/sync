@@ -328,7 +328,7 @@ load_module_on_all_nodes(Module) ->
     {Module, Binary, _} = code:get_object_code(Module),
     F = fun(Node) ->
         io:format("[~s:~p] DEBUG - Node: ~p~n", [?MODULE, ?LINE, Node]),
-        error_logger:info_msg("Reloading '~s' on ~s.~n", [Module, Node]),
+        lager:info("Reloading '~s' on ~s.~n", [Module, Node]),
         rpc:call(Node, code, ensure_loaded, [Module]),
         case rpc:call(Node, code, which, [Module]) of
             Filename when is_binary(Filename) orelse is_list(Filename) ->
@@ -413,7 +413,7 @@ recompile_src_file(SrcFile, EnablePatching) ->
             end;
 
         undefined ->
-            error_logger:error_msg("Unable to determine options for ~p", [SrcFile])
+            lager:error("Unable to determine options for ~p", [SrcFile])
     end.
 
 
@@ -428,14 +428,14 @@ print_results(_Module, SrcFile, [], Warnings) ->
         io_lib:format("~s:0: Recompiled with ~p warnings~n", [SrcFile, length(Warnings)])
     ],
     growl_warnings(growl_format_errors([], Warnings)),
-    error_logger:info_msg(lists:flatten(Msg));
+    lager:info(lists:flatten(Msg));
 
 print_results(_Module, SrcFile, Errors, Warnings) ->
     Msg = [
         format_errors(SrcFile, Errors, Warnings)
     ],
     growl_errors(growl_format_errors(Errors, Warnings)),
-    error_logger:info_msg(lists:flatten(Msg)).
+    lager:info(lists:flatten(Msg)).
 
 
 %% @private Print error messages in a pretty and user readable way.
